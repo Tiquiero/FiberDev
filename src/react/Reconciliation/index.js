@@ -1,9 +1,8 @@
 // import { updateNodeElement } from "../DOM";
 import {
   createTaskQueue,
-  // arrified,
-  // createStateNode,
-  // getTag,
+  createStateNode,
+  getTag,
   // getRoot
 } from "../Misc";
 
@@ -20,6 +19,29 @@ const reconcileChildren = (fiber, children) => {
   let numberOfElements = arrifiedChildren.length;
   let newFiber = null;  // 子级 fiber 对象
   let prevFiber = null;  // 上一个兄弟 fiber 对象
+  let element = null;
+
+  while (idx < numberOfElements) {
+    element = arrifiedChildren[idx];
+    newFiber = {
+      type: element.type,
+      props: element.props,
+      effects: [],
+      effectsTag: "placement",
+      parent: fiber,
+      tag: getTag(element),
+    };
+
+    if (idx === 0) {
+      // 如果是第一个子节点，设置fiber的子级为该节点
+      fiber.child = newFiber;
+    } else {
+      // 如果不是第一个子节点，则设置为第一个子节点的兄弟节点
+      prevFiber.sibling = newFiber;
+    }
+    prevFiber = newFiber;
+    idx++;
+  }
 }
 
 /**
@@ -29,6 +51,10 @@ const reconcileChildren = (fiber, children) => {
  */
 const executeTask = (fiber) => {
   reconcileChildren(fiber, fiber.props.children);
+
+  // 如果还有子节点，就把子节点当作新的subTask返回，然后会继续执行executeTask（递归构建子级）
+  if (fiber.child) return fiber.child;
+  console.log('--fiber--', fiber)
 }
 
 /**
@@ -37,7 +63,7 @@ const executeTask = (fiber) => {
 const getFirstTask = () => {
   const task = taskQueue.pop();
   return {
-    props: task.props ,
+    props: task.props,
     tag: 'host_root',
     stateNode: task.dom,
     effects: [],
@@ -48,9 +74,9 @@ const getFirstTask = () => {
 const workLoop = (deadline) => {
   if (!subTask) {
     subTask = getFirstTask(); // 如果没有任务，就去拿任务
-    console.log('--subTask-', subTask)
   }
 
+  console.log('--subTask-', subTask)
 
   while (subTask && deadline.timeRemaining() > 1) {
     /**
@@ -82,7 +108,7 @@ export const render = (element, dom) => {
 
    taskQueue.push({
      dom,
-     porps: { children: element }
+     props: { children: element }
    });
 
    requestIdleCallback(performTask);

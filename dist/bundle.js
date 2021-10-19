@@ -135,10 +135,19 @@ Object(_react__WEBPACK_IMPORTED_MODULE_0__["render"])(jsx, root); // // setTimeo
 /*!**************************************!*\
   !*** ./src/react/Component/index.js ***!
   \**************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! exports provided: Component */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return Component; });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var Component = function Component(props) {
+  _classCallCheck(this, Component);
+
+  this.props = props;
+};
 
 /***/ }),
 
@@ -183,6 +192,140 @@ function createElement(type, props) {
 
 /***/ }),
 
+/***/ "./src/react/DOM/createDOMElement.js":
+/*!*******************************************!*\
+  !*** ./src/react/DOM/createDOMElement.js ***!
+  \*******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return createDOMElement; });
+/* harmony import */ var _updateNodeElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./updateNodeElement */ "./src/react/DOM/updateNodeElement.js");
+
+function createDOMElement(virtualDOM) {
+  var newElement = null;
+
+  if (virtualDOM.type === 'text') {
+    // 文本节点
+    newElement = document.createTextNode(virtualDOM.props.textContent);
+  } else {
+    // 元素节点
+    newElement = document.createElement(virtualDOM.type);
+    Object(_updateNodeElement__WEBPACK_IMPORTED_MODULE_0__["default"])(newElement, virtualDOM);
+  }
+
+  return newElement;
+}
+
+/***/ }),
+
+/***/ "./src/react/DOM/index.js":
+/*!********************************!*\
+  !*** ./src/react/DOM/index.js ***!
+  \********************************/
+/*! exports provided: createDOMElement, updateNodeElement */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _createDOMElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createDOMElement */ "./src/react/DOM/createDOMElement.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createDOMElement", function() { return _createDOMElement__WEBPACK_IMPORTED_MODULE_0__["default"]; });
+
+/* harmony import */ var _updateNodeElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./updateNodeElement */ "./src/react/DOM/updateNodeElement.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "updateNodeElement", function() { return _updateNodeElement__WEBPACK_IMPORTED_MODULE_1__["default"]; });
+
+
+
+
+/***/ }),
+
+/***/ "./src/react/DOM/updateNodeElement.js":
+/*!********************************************!*\
+  !*** ./src/react/DOM/updateNodeElement.js ***!
+  \********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return updateNodeElement; });
+function updateNodeElement(newElement, virtualDOM) {
+  var oldVirtualDOM = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var newProps = virtualDOM.props || {};
+  var oldProps = oldVirtualDOM.props || {};
+
+  if (virtualDOM.type === "text") {
+    if (newProps.textContent !== oldProps.textContent) {
+      if (virtualDOM.parent.type !== oldVirtualDOM.parent.type) {
+        virtualDOM.parent.stateNode.appendChild(document.createTextNode(newProps.textContent));
+      } else {
+        virtualDOM.parent.stateNode.replaceChild(document.createTextNode(newProps.textContent), oldVirtualDOM.stateNode);
+      }
+    }
+
+    return;
+  }
+
+  Object.keys(newProps).forEach(function (propName) {
+    var newPropsValue = newProps[propName];
+    var oldPropsValue = oldProps[propName];
+
+    if (newPropsValue !== oldPropsValue) {
+      // 判断属性是否是否事件属性 onClick -> click
+      if (propName.slice(0, 2) === 'on') {
+        var eventName = propName.toLowerCase().slice(2); // 为元素添加事件
+
+        newElement.addEventListener(eventName, newPropsValue); // 删除原有的事件的事件处理函数
+
+        if (oldPropsValue) newElement.removeEventListener(eventName, oldPropsValue);
+      } else if (propName !== 'children') {
+        newElement.setAttribute(propName === 'className' ? 'class' : propName, newPropsValue);
+      }
+    }
+  }); // 判断属性被删除的情况
+
+  Object.keys(oldProps).forEach(function (propName) {
+    var newPropsValue = newProps[propName];
+    var oldPropsValue = oldProps[propName];
+
+    if (!newPropsValue) {
+      // 属性被删除了
+      if (propName.slice(0, 2) === 'on') {
+        var eventName = propName.toLowerCase().slice(2);
+        newElement.removeEventListener(eventName, oldPropsValue);
+      } else if (propName !== "children") {
+        newElement.removeAttribute(propName);
+      }
+    }
+  });
+}
+
+/***/ }),
+
+/***/ "./src/react/Misc/CreateStateNode/index.js":
+/*!*************************************************!*\
+  !*** ./src/react/Misc/CreateStateNode/index.js ***!
+  \*************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _DOM__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../DOM */ "./src/react/DOM/index.js");
+
+
+var createStateNode = function createStateNode(fiber) {
+  if (fiber.tag === 'host_component') {
+    return Object(_DOM__WEBPACK_IMPORTED_MODULE_0__["createDOMElement"])(fiber);
+  }
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (createStateNode);
+
+/***/ }),
+
 /***/ "./src/react/Misc/CreateTaskQueue/index.js":
 /*!*************************************************!*\
   !*** ./src/react/Misc/CreateTaskQueue/index.js ***!
@@ -222,11 +365,37 @@ var createTaskQueue = function createTaskQueue() {
 
 /***/ }),
 
+/***/ "./src/react/Misc/getTag/index.js":
+/*!****************************************!*\
+  !*** ./src/react/Misc/getTag/index.js ***!
+  \****************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../Component */ "./src/react/Component/index.js");
+
+
+var getTag = function getTag(vdom) {
+  if (typeof vdom.type === "string") {
+    return "host_component";
+  } else if (Object.getPrototypeOf(vdom.type) === _Component__WEBPACK_IMPORTED_MODULE_0__["Component"]) {
+    return "class_component";
+  }
+
+  return "function_component";
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (getTag);
+
+/***/ }),
+
 /***/ "./src/react/Misc/index.js":
 /*!*********************************!*\
   !*** ./src/react/Misc/index.js ***!
   \*********************************/
-/*! exports provided: createTaskQueue */
+/*! exports provided: createTaskQueue, createStateNode, getTag */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -234,10 +403,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _CreateTaskQueue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./CreateTaskQueue */ "./src/react/Misc/CreateTaskQueue/index.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createTaskQueue", function() { return _CreateTaskQueue__WEBPACK_IMPORTED_MODULE_0__["default"]; });
 
- // export { default as arrified } from "./Arrified"
-// export { default as createStateNode } from "./createStateNode"
-// export { default as getTag } from "./getTag"
-// export { default as getRoot } from "./getRoot"
+/* harmony import */ var _CreateStateNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./CreateStateNode */ "./src/react/Misc/CreateStateNode/index.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createStateNode", function() { return _CreateStateNode__WEBPACK_IMPORTED_MODULE_1__["default"]; });
+
+/* harmony import */ var _getTag__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./getTag */ "./src/react/Misc/getTag/index.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getTag", function() { return _getTag__WEBPACK_IMPORTED_MODULE_2__["default"]; });
+
+
+
+ // export { default as getRoot } from "./getRoot"
 
 /***/ }),
 
@@ -271,6 +445,31 @@ var reconcileChildren = function reconcileChildren(fiber, children) {
   var newFiber = null; // 子级 fiber 对象
 
   var prevFiber = null; // 上一个兄弟 fiber 对象
+
+  var element = null;
+
+  while (idx < numberOfElements) {
+    element = arrifiedChildren[idx];
+    newFiber = {
+      type: element.type,
+      props: element.props,
+      effects: [],
+      effectsTag: "placement",
+      parent: fiber,
+      tag: Object(_Misc__WEBPACK_IMPORTED_MODULE_0__["getTag"])(element)
+    };
+
+    if (idx === 0) {
+      // 如果是第一个子节点，设置fiber的子级为该节点
+      fiber.child = newFiber;
+    } else {
+      // 如果不是第一个子节点，则设置为第一个子节点的兄弟节点
+      prevFiber.sibling = newFiber;
+    }
+
+    prevFiber = newFiber;
+    idx++;
+  }
 };
 /**
  * 
@@ -280,7 +479,10 @@ var reconcileChildren = function reconcileChildren(fiber, children) {
 
 
 var executeTask = function executeTask(fiber) {
-  reconcileChildren(fiber, fiber.props.children);
+  reconcileChildren(fiber, fiber.props.children); // 如果还有子节点，就把子节点当作新的subTask返回，然后会继续执行executeTask（递归构建子级）
+
+  if (fiber.child) return fiber.child;
+  console.log('--fiber--', fiber);
 };
 /**
  * 拿取任务后构造最外层的fiber对象返回出去
@@ -301,9 +503,9 @@ var getFirstTask = function getFirstTask() {
 var workLoop = function workLoop(deadline) {
   if (!subTask) {
     subTask = getFirstTask(); // 如果没有任务，就去拿任务
-
-    console.log('--subTask-', subTask);
   }
+
+  console.log('--subTask-', subTask);
 
   while (subTask && deadline.timeRemaining() > 1) {
     /**
@@ -334,7 +536,7 @@ var render = function render(element, dom) {
    */
   taskQueue.push({
     dom: dom,
-    porps: {
+    props: {
       children: element
     }
   });
@@ -357,7 +559,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _Reconciliation__WEBPACK_IMPORTED_MODULE_1__["render"]; });
 
 /* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Component */ "./src/react/Component/index.js");
-/* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_Component__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return _Component__WEBPACK_IMPORTED_MODULE_2__["Component"]; });
 
 
