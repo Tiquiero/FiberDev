@@ -9,7 +9,7 @@ const jsx = (
   </div>
 )
 
-render(jsx, root)
+// render(jsx, root)
 
 // // setTimeout(() => {
 // //   const jsx = (
@@ -20,24 +20,24 @@ render(jsx, root)
 // //   render(jsx, root)
 // // }, 2000)
 
-// class Greating extends Component {
-//   constructor(props) {
-//     super(props)
-//     this.state = {
-//       name: "张三"
-//     }
-//   }
-//   render() {
-//     return (
-//       <div>
-//         {this.props.title}hahahaha {this.state.name}
-//         <button onClick={() => this.setState({ name: "李四" })}>button</button>
-//       </div>
-//     )
-//   }
-// }
+class Greating extends Component {
+  constructor(props) {
+    super(props)
+    // this.state = {
+    //   name: "张三"
+    // }
+  }
+  render() {
+    return (
+      <div>奥利给
+        {/* {this.props.title}hahahaha {this.state.name}
+        <button onClick={() => this.setState({ name: "李四" })}>button</button> */}
+      </div>
+    )
+  }
+}
 
-// render(<Greating title="奥利给" />, root);
+render(<Greating />, root);
 
 // function FnComponent(props) {
 //   return <div>{props.title}FnComponent</div>

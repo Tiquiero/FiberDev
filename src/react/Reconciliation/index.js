@@ -13,8 +13,19 @@ const arrified = arg => (Array.isArray(arg) ? arg : [arg]);
 
 const commitAllWork = fiber => {
   fiber.effects.forEach(i => {
-    const { effectsTag, parent, stateNode } = i;
-    if (effectsTag === 'placement') parent.stateNode.appendChild(stateNode);
+    const { effectTag, parent, stateNode, tag } = i;
+    if (effectTag === 'placement') {
+      let parentFiber = parent;
+      
+      while (parentFiber.tag === 'class_component') {
+        // 如果父节点还是类组件，就一直往上找到，直到不是类组件的父级（普通节点）
+        // 类组件节点不能直接追加（appendChild）dom元素
+        parentFiber = parentFiber.parent;
+      }
+      if (tag === 'host_component') {
+        parentFiber.stateNode.appendChild(stateNode);
+      }
+    }
   });
 }
 
@@ -35,10 +46,13 @@ const reconcileChildren = (fiber, children) => {
       type: element.type,
       props: element.props,
       effects: [],
-      effectsTag: "placement",
+      effectTag: "placement",
       parent: fiber,
       tag: getTag(element),
     };
+
+    // 为fiber对象添加DOM对象或者是类组件的实例对象
+    newFiber.stateNode = createStateNode(newFiber);
 
     if (idx === 0) {
       // 如果是第一个子节点，设置fiber的子级为该节点
@@ -58,9 +72,14 @@ const reconcileChildren = (fiber, children) => {
  * 该方法就是构造出子级fiber对象
  */
 const executeTask = (fiber) => {
-  reconcileChildren(fiber, fiber.props.children);
+  if (fiber.tag === 'class_component') {
+    // 如果是类组件，那就返回stateNode的render方法，render后才是dom节点
+    reconcileChildren(fiber, fiber.stateNode.render());
+  } else {
+    reconcileChildren(fiber, fiber.props.children);
+  }
 
-  // 如果还有子节点，就把子节点当作新的subTask返回，然后会继续执行executeTask（递归构建子级）
+  // // 如果还有子节点，就把子节点当作新的subTask返回，然后会继续执行executeTask（递归构建子级）
   if (fiber.child) return fiber.child;
 
   let curExecutelyFiber = fiber;
@@ -79,7 +98,6 @@ const executeTask = (fiber) => {
     // 没有同级就往上，返回父级再同理递归查找，最终会往上到根节点
     curExecutelyFiber = curExecutelyFiber.parent;
   }
-
   pendingCommit = curExecutelyFiber;
 }
 

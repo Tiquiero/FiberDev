@@ -8,4 +8,5 @@ const getTag = vdom => {
   }
   return "function_component";
 }
+
 export default getTag;
