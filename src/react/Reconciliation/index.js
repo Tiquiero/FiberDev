@@ -7,8 +7,16 @@ import {
 } from "../Misc";
 
 let subTask = null;
+let pendingCommit = null;
 const taskQueue = createTaskQueue();
 const arrified = arg => (Array.isArray(arg) ? arg : [arg]);
+
+const commitAllWork = fiber => {
+  fiber.effects.forEach(i => {
+    const { effectsTag, parent, stateNode } = i;
+    if (effectsTag === 'placement') parent.stateNode.appendChild(stateNode);
+  });
+}
 
 const reconcileChildren = (fiber, children) => {
   /**
@@ -54,7 +62,25 @@ const executeTask = (fiber) => {
 
   // 如果还有子节点，就把子节点当作新的subTask返回，然后会继续执行executeTask（递归构建子级）
   if (fiber.child) return fiber.child;
-  console.log('--fiber--', fiber)
+
+  let curExecutelyFiber = fiber;
+
+  while (curExecutelyFiber.parent) {
+
+    // fiber对象都存储在各自effect数组中，父级存放的是子级的fiber对象合集
+    // 所以最终最外层的effect存储的是所有的fiber对象数组
+    curExecutelyFiber.parent.effects = curExecutelyFiber.parent.effects.concat(
+      curExecutelyFiber.effects.concat([curExecutelyFiber])
+    )
+
+    // 如果这个节点或者子节点 有同级，就返回他的同级
+    if (curExecutelyFiber.sibling) return curExecutelyFiber.sibling;
+
+    // 没有同级就往上，返回父级再同理递归查找，最终会往上到根节点
+    curExecutelyFiber = curExecutelyFiber.parent;
+  }
+
+  pendingCommit = curExecutelyFiber;
 }
 
 /**
@@ -85,6 +111,8 @@ const workLoop = (deadline) => {
      */
     subTask = executeTask(subTask);
   }
+
+  if (pendingCommit) commitAllWork(pendingCommit);
 }
 
 const performTask = (deadline) => {
