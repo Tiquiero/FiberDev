@@ -9,35 +9,35 @@ const jsx = (
   </div>
 )
 
-render(jsx, root)
+// render(jsx, root)
 
-setTimeout(() => {
-  const jsx = (
-    <div>
-      <div>奥利给</div>
-    </div>
-  )
-  render(jsx, root)
-}, 2000)
+// setTimeout(() => {
+//   const jsx = (
+//     <div>
+//       <div>奥利给</div>
+//     </div>
+//   )
+//   render(jsx, root)
+// }, 2000)
 
 class Greating extends Component {
   constructor(props) {
     super(props)
-    // this.state = {
-    //   name: "张三"
-    // }
+    this.state = {
+      name: "张三"
+    }
   }
   render() {
     return (
       <div>奥利给
         {this.props.title}hahahaha
-        {/* <button onClick={() => this.setState({ name: "李四" })}>button</button> */}
+        <button onClick={() => this.setState({ name: "李四" })}>button</button>
       </div>
     )
   }
 }
 
-// render(<Greating title="Hello" />, root);
+render(<Greating title="Hello" />, root);
 
 function FnComponent(props) {
   return <div>{props.title}FnComponent</div>

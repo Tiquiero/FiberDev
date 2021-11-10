@@ -120,12 +120,15 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 
 var root = document.getElementById("root");
-var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "Hello React"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "Hi Fiber"));
-Object(_react__WEBPACK_IMPORTED_MODULE_0__["render"])(jsx, root);
-setTimeout(function () {
-  var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u5965\u5229\u7ED9"));
-  Object(_react__WEBPACK_IMPORTED_MODULE_0__["render"])(jsx, root);
-}, 2000);
+var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "Hello React"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "Hi Fiber")); // render(jsx, root)
+// setTimeout(() => {
+//   const jsx = (
+//     <div>
+//       <div>奥利给</div>
+//     </div>
+//   )
+//   render(jsx, root)
+// }, 2000)
 
 var Greating = /*#__PURE__*/function (_Component) {
   _inherits(Greating, _Component);
@@ -133,23 +136,38 @@ var Greating = /*#__PURE__*/function (_Component) {
   var _super = _createSuper(Greating);
 
   function Greating(props) {
+    var _this;
+
     _classCallCheck(this, Greating);
 
-    return _super.call(this, props); // this.state = {
-    //   name: "张三"
-    // }
+    _this = _super.call(this, props);
+    _this.state = {
+      name: "张三"
+    };
+    return _this;
   }
 
   _createClass(Greating, [{
     key: "render",
     value: function render() {
-      return /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u5965\u5229\u7ED9", this.props.title, "hahahaha");
+      var _this2 = this;
+
+      return /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u5965\u5229\u7ED9", this.props.title, "hahahaha", /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("button", {
+        onClick: function onClick() {
+          return _this2.setState({
+            name: "李四"
+          });
+        }
+      }, "button"));
     }
   }]);
 
   return Greating;
-}(_react__WEBPACK_IMPORTED_MODULE_0__["Component"]); // render(<Greating title="Hello" />, root);
+}(_react__WEBPACK_IMPORTED_MODULE_0__["Component"]);
 
+Object(_react__WEBPACK_IMPORTED_MODULE_0__["render"])( /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement(Greating, {
+  title: "Hello"
+}), root);
 
 function FnComponent(props) {
   return /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, props.title, "FnComponent");
@@ -479,13 +497,16 @@ var commitAllWork = function commitAllWork(fiber) {
         parent = i.parent,
         stateNode = i.stateNode,
         tag = i.tag,
-        alternate = i.alternate;
+        alternate = i.alternate,
+        type = i.type;
 
-    if (effectTag === 'update') {
+    if (effectTag === 'delete') {
+      parent.stateNode.removeChild(stateNode);
+    } else if (effectTag === 'update') {
       // 更新
       if (type === alternate.type) {
         // 节点类型相同，做更新操作
-        Object(_DOM__WEBPACK_IMPORTED_MODULE_0__["updateNodeElement"])(stateNode, i, alternate.stateNode);
+        Object(_DOM__WEBPACK_IMPORTED_MODULE_0__["updateNodeElement"])(stateNode, i, alternate);
       } else {
         // 节点类型不同，不用比对，直接用新节点替换旧的
         parent.stateNode.replaceChild(stateNode, alternate.stateNode);
@@ -526,12 +547,16 @@ var reconcileChildren = function reconcileChildren(fiber, children) {
 
   var element = null;
   var alternate = null;
-  if (fiber.alternate && fiber.fiber.child) alternate = fiber.alternate.child;
+  if (fiber.alternate && fiber.alternate.child) alternate = fiber.alternate.child;
 
-  while (idx < numberOfElements) {
+  while (idx < numberOfElements || alternate) {
     element = arrifiedChildren[idx];
 
-    if (element && alternate) {
+    if (!element && alternate) {
+      // 删除
+      alternate.effectTag = 'delete';
+      fiber.effects.push(alternate);
+    } else if (element && alternate) {
       // 更新
       newFiber = {
         type: element.type,
@@ -568,7 +593,7 @@ var reconcileChildren = function reconcileChildren(fiber, children) {
     if (idx === 0) {
       // 如果是第一个子节点，设置fiber的子级为该节点
       fiber.child = newFiber;
-    } else {
+    } else if (element) {
       // 如果不是第一个子节点，则设置为第一个子节点的兄弟节点
       prevFiber.sibling = newFiber;
     }

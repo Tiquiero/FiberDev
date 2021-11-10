@@ -14,12 +14,14 @@ const arrified = arg => (Array.isArray(arg) ? arg : [arg]);
 const commitAllWork = fiber => {
   // 循环 effects 数组构建DOM节点树
   fiber.effects.forEach(i => {
-    const { effectTag, parent, stateNode, tag, alternate } = i;
-    if (effectTag === 'update') {
+    const { effectTag, parent, stateNode, tag, alternate, type } = i;
+    if (effectTag === 'delete') {
+      parent.stateNode.removeChild(stateNode);
+    } else if (effectTag === 'update') {
       // 更新
       if (type === alternate.type) {
         // 节点类型相同，做更新操作
-        updateNodeElement(stateNode, i, alternate.stateNode);
+        updateNodeElement(stateNode, i, alternate);
       } else {
         // 节点类型不同，不用比对，直接用新节点替换旧的
         parent.stateNode.replaceChild(stateNode, alternate.stateNode);
@@ -58,12 +60,16 @@ const reconcileChildren = (fiber, children) => {
   let element = null;
   let alternate = null;
 
-  if (fiber.alternate && fiber.fiber.child) alternate = fiber.alternate.child;
+  if (fiber.alternate && fiber.alternate.child) alternate = fiber.alternate.child;
 
-  while (idx < numberOfElements) {
+  while (idx < numberOfElements || alternate) {
     element = arrifiedChildren[idx];
 
-    if (element && alternate) {
+    if(!element && alternate) {
+      // 删除
+      alternate.effectTag = 'delete';
+      fiber.effects.push(alternate);
+    } else if (element && alternate) {
       // 更新
       newFiber = {
         type: element.type,
@@ -101,7 +107,7 @@ const reconcileChildren = (fiber, children) => {
     if (idx === 0) {
       // 如果是第一个子节点，设置fiber的子级为该节点
       fiber.child = newFiber;
-    } else {
+    } else if (element) {
       // 如果不是第一个子节点，则设置为第一个子节点的兄弟节点
       prevFiber.sibling = newFiber;
     }
