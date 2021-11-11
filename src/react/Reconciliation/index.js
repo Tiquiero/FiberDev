@@ -3,7 +3,7 @@ import {
   createTaskQueue,
   createStateNode,
   getTag,
-  // getRoot
+  getRoot
 } from "../Misc";
 
 let subTask = null;
@@ -15,6 +15,8 @@ const commitAllWork = fiber => {
   // 循环 effects 数组构建DOM节点树
   fiber.effects.forEach(i => {
     const { effectTag, parent, stateNode, tag, alternate, type } = i;
+    if (tag === 'class_component') stateNode.__fiber = i;
+
     if (effectTag === 'delete') {
       parent.stateNode.removeChild(stateNode);
     } else if (effectTag === 'update') {
@@ -130,6 +132,14 @@ const reconcileChildren = (fiber, children) => {
  */
 const executeTask = (fiber) => {
   if (fiber.tag === 'class_component') {
+    if (fiber.stateNode.__fiber && fiber.stateNode.__fiber.partialState) {
+      // 如果有要更新的状态（state）
+      fiber.stateNode.state = {
+        ...fiber.stateNode.state,
+        ...fiber.stateNode.__fiber.partialState
+      }
+    }
+
     // 如果是类组件，那就返回stateNode的render方法，render后才是dom节点
     reconcileChildren(fiber, fiber.stateNode.render());
   } else if (fiber.tag === 'function_component') {
@@ -165,6 +175,21 @@ const executeTask = (fiber) => {
  */
 const getFirstTask = () => {
   const task = taskQueue.pop();
+
+  if (task.from === 'class_component') {
+    // 组件状态更新任务
+    const root = getRoot(task.instance);
+    task.instance.__fiber.partialState = task.partialState;
+    return {
+      props: root.props,
+      tag: 'host_root',
+      stateNode: root.stateNode,
+      effects: [],
+      child: null,
+      alternate: root
+    }
+  }
+
   return {
     props: task.props,
     tag: 'host_root',
@@ -218,4 +243,13 @@ export const render = (element, dom) => {
    });
 
    requestIdleCallback(performTask);
+}
+
+export const scheduleUpdate = (instance, partialState) => {
+  taskQueue.push({
+    from: 'class_component',
+    instance,
+    partialState
+  });
+  requestIdleCallback(performTask);
 }

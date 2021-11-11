@@ -30,7 +30,7 @@ class Greating extends Component {
   render() {
     return (
       <div>奥利给
-        {this.props.title}hahahaha
+        {this.state.name}
         <button onClick={() => this.setState({ name: "李四" })}>button</button>
       </div>
     )

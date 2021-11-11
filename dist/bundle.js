@@ -152,7 +152,7 @@ var Greating = /*#__PURE__*/function (_Component) {
     value: function render() {
       var _this2 = this;
 
-      return /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u5965\u5229\u7ED9", this.props.title, "hahahaha", /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("button", {
+      return /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u5965\u5229\u7ED9", this.state.name, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("button", {
         onClick: function onClick() {
           return _this2.setState({
             name: "李四"
@@ -185,13 +185,30 @@ function FnComponent(props) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return Component; });
+/* harmony import */ var _Reconciliation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Reconciliation */ "./src/react/Reconciliation/index.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Component = function Component(props) {
-  _classCallCheck(this, Component);
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-  this.props = props;
-};
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+var Component = /*#__PURE__*/function () {
+  function Component(props) {
+    _classCallCheck(this, Component);
+
+    this.props = props;
+  }
+
+  _createClass(Component, [{
+    key: "setState",
+    value: function setState(partialState) {
+      Object(_Reconciliation__WEBPACK_IMPORTED_MODULE_0__["scheduleUpdate"])(this, partialState);
+    }
+  }]);
+
+  return Component;
+}();
 
 /***/ }),
 
@@ -418,9 +435,32 @@ var createTaskQueue = function createTaskQueue() {
 
 /***/ }),
 
-/***/ "./src/react/Misc/getTag/index.js":
+/***/ "./src/react/Misc/GetRoot/index.js":
+/*!*****************************************!*\
+  !*** ./src/react/Misc/GetRoot/index.js ***!
+  \*****************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+var getRoot = function getRoot(instance) {
+  var fiber = instance.__fiber;
+
+  while (fiber.parent) {
+    fiber = fiber.parent;
+  }
+
+  return fiber;
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (getRoot);
+
+/***/ }),
+
+/***/ "./src/react/Misc/GetTag/index.js":
 /*!****************************************!*\
-  !*** ./src/react/Misc/getTag/index.js ***!
+  !*** ./src/react/Misc/GetTag/index.js ***!
   \****************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -448,7 +488,7 @@ var getTag = function getTag(vdom) {
 /*!*********************************!*\
   !*** ./src/react/Misc/index.js ***!
   \*********************************/
-/*! exports provided: createTaskQueue, createStateNode, getTag */
+/*! exports provided: createTaskQueue, createStateNode, getTag, getRoot */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -459,12 +499,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _CreateStateNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./CreateStateNode */ "./src/react/Misc/CreateStateNode/index.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createStateNode", function() { return _CreateStateNode__WEBPACK_IMPORTED_MODULE_1__["default"]; });
 
-/* harmony import */ var _getTag__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./getTag */ "./src/react/Misc/getTag/index.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getTag", function() { return _getTag__WEBPACK_IMPORTED_MODULE_2__["default"]; });
+/* harmony import */ var _GetTag__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./GetTag */ "./src/react/Misc/GetTag/index.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getTag", function() { return _GetTag__WEBPACK_IMPORTED_MODULE_2__["default"]; });
+
+/* harmony import */ var _GetRoot__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./GetRoot */ "./src/react/Misc/GetRoot/index.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getRoot", function() { return _GetRoot__WEBPACK_IMPORTED_MODULE_3__["default"]; });
 
 
 
- // export { default as getRoot } from "./getRoot"
+
+
 
 /***/ }),
 
@@ -472,14 +516,21 @@ __webpack_require__.r(__webpack_exports__);
 /*!*******************************************!*\
   !*** ./src/react/Reconciliation/index.js ***!
   \*******************************************/
-/*! exports provided: render */
+/*! exports provided: render, scheduleUpdate */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "scheduleUpdate", function() { return scheduleUpdate; });
 /* harmony import */ var _DOM__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../DOM */ "./src/react/DOM/index.js");
 /* harmony import */ var _Misc__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Misc */ "./src/react/Misc/index.js");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 
 
 var subTask = null;
@@ -499,6 +550,7 @@ var commitAllWork = function commitAllWork(fiber) {
         tag = i.tag,
         alternate = i.alternate,
         type = i.type;
+    if (tag === 'class_component') stateNode.__fiber = i;
 
     if (effectTag === 'delete') {
       parent.stateNode.removeChild(stateNode);
@@ -617,7 +669,12 @@ var reconcileChildren = function reconcileChildren(fiber, children) {
 
 var executeTask = function executeTask(fiber) {
   if (fiber.tag === 'class_component') {
-    // 如果是类组件，那就返回stateNode的render方法，render后才是dom节点
+    if (fiber.stateNode.__fiber && fiber.stateNode.__fiber.partialState) {
+      // 如果有要更新的状态（state）
+      fiber.stateNode.state = _objectSpread(_objectSpread({}, fiber.stateNode.state), fiber.stateNode.__fiber.partialState);
+    } // 如果是类组件，那就返回stateNode的render方法，render后才是dom节点
+
+
     reconcileChildren(fiber, fiber.stateNode.render());
   } else if (fiber.tag === 'function_component') {
     reconcileChildren(fiber, fiber.stateNode(fiber.props));
@@ -648,6 +705,21 @@ var executeTask = function executeTask(fiber) {
 
 var getFirstTask = function getFirstTask() {
   var task = taskQueue.pop();
+
+  if (task.from === 'class_component') {
+    // 组件状态更新任务
+    var root = Object(_Misc__WEBPACK_IMPORTED_MODULE_1__["getRoot"])(task.instance);
+    task.instance.__fiber.partialState = task.partialState;
+    return {
+      props: root.props,
+      tag: 'host_root',
+      stateNode: root.stateNode,
+      effects: [],
+      child: null,
+      alternate: root
+    };
+  }
+
   return {
     props: task.props,
     tag: 'host_root',
@@ -700,6 +772,14 @@ var render = function render(element, dom) {
     props: {
       children: element
     }
+  });
+  requestIdleCallback(performTask);
+};
+var scheduleUpdate = function scheduleUpdate(instance, partialState) {
+  taskQueue.push({
+    from: 'class_component',
+    instance: instance,
+    partialState: partialState
   });
   requestIdleCallback(performTask);
 };
